@@ -18,6 +18,8 @@ Project - configure - C complier - char is unsigned uncheck.
 #include <delay.h>
 
 #define Echo PINC.2
+#define MODE1 0
+#define MODE2 1
 
 void inituart(void); // UART setup
 char getnum(void); // Data Receive function
@@ -59,17 +61,17 @@ void main(void)
 
             if (!PINF.1) // when the switch is pushed
             {
-                mode = 1; // change mode
+                mode = MODE1; // change mode
                 old = delaying; // save the time when mode changed
                 OCR1B = 375; // set Servo2 angle
             }
 
             else if (!PINF.3) // when the switch is pushed
             {
-                mode = 0; // change mode
+                mode = MODE2; // change mode
             }
 
-            if (mode == 0)
+            if (mode == MODE1)
             {
                 com1(&x, &y); // receive mouse cordinate
                 putnum(range); // transmit ultrasonic data
@@ -77,27 +79,27 @@ void main(void)
                 OCR1B = y + 375; // set Servo2 angle
             }
 
-            if (mode == 1)
+            if (mode == MODE2)
             {
-                com1(&x, &y);
-                putnum(range);
+                com1(&x, &y); // receive mouse cordinate
+                putnum(range); // transmit ultrasonic data
 
-                switch ((delaying - old) / 200) { 
-
+                switch ((delaying - old) / 200) { // every 200ms after changing mode
+                // move Servo1
                 case 0:
-                    OCR1A = 250;
+                    OCR1A = 250; // 60 degrees
                     break;
                 case 1:
-                    OCR1A = 375;
+                    OCR1A = 375; // 90 degrees
                     break;
                 case 2:
-                    OCR1A = 500;
+                    OCR1A = 500; // 120 degrees
                     break;
                 case 3:
-                    OCR1A = 375; 
+                    OCR1A = 375; // 90 degrees
                     break;
                 case 4:
-                    OCR1A = 250; 
+                    OCR1A = 250; // 60 degrees
                     old = delaying;
                     break;
 
@@ -134,7 +136,7 @@ void com1(char* A, char* B) // Communicate with Processing
     }
 }
 
-char getEcho(void)
+char getEcho(void) // get Range from ultrasonic sensor
 {
     char range = 0;
 
